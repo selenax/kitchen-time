@@ -1,12 +1,13 @@
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const express = require('express');
-
-const socket = require('socket.io');
-
 const app = express();
-const session = require('express-session');
+
+const server = require('http').createServer(app);
 const path = require('path');
+const io = require('socket.io')(server);
+
+const session = require('express-session');
 
 const database = require('../database/index.js');
 const User = require('../database/schemas/UserSchema.js');
@@ -241,13 +242,8 @@ app.post('/search/users', (req, res) => {
 // Initialization
 const port = process.env.PORT || 3000;
 
-const server = app.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});
-
-
 // socket.io
-const io = socket(server);
+
 
 io.on('connection', (socket) => {
   console.log(socket.id);
@@ -256,3 +252,5 @@ io.on('connection', (socket) => {
     io.emit('receivedMsg', data);
   });
 });
+
+server.listen(`${port}`);
