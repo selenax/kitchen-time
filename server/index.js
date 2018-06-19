@@ -253,15 +253,14 @@ const server = app
 const io = socketIO(server);
 
 io.on('connection', (socket) => {
-  console.log('User connected');
+  console.log('User connected to socket');
 
   socket.on('sendMsg', (data) => {
     io.emit('receivedMsg', data);
 
     socket.on('disconnect', () => {
-      console.log('user disconnected');
+      console.log('user disconnected from socket');
     });
   });
 });
 
-setInterval(() => io.emit('time', new Date().toTimeString()), 1000);

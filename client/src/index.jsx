@@ -5,7 +5,7 @@ import {
   Route,
   Switch,
 } from 'react-router-dom';
-import registerServiceWorker from './components/registerServiceWorker';
+import registerServiceWorker from './registerServiceWorker';
 import $ from 'jquery';
 
 
