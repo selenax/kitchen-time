@@ -1,11 +1,13 @@
 const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
+const path = require('path');
+
 const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+
 const app = express();
 
-const server = require('http').createServer(app);
-const path = require('path');
-const io = require('socket.io')(server);
 
 const session = require('express-session');
 
@@ -19,16 +21,17 @@ const config = require('../client/src/config/walmart.js');
 const SALT_ROUNDS = 10; // Difficulty  to crack (Incrementing doubles compute time)
 const CLIENT_FOLDER = path.join(__dirname, '../client/dist');
 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(session({
-    secret:
+  secret:
       process.env.SESSION_SECRET || '0979zx7v6vvq0398ubvq7w6dc8c7z5rvg7i1',
-    cookie: {},
-    resave: true,
-    saveUninitialized: true,
-  }),);
+  cookie: {},
+  resave: true,
+  saveUninitialized: true,
+}));
 
 // Handle static endpoints
 const allPublicEndpoints = ['/login', '/register'];
@@ -36,12 +39,12 @@ const allPrivateEndpoints = ['/', '/lists'];
 
 function serveStatic(endpoint, authorizeCallback = (req, res, next) => next()) {
   app.get(endpoint, authorizeCallback, (req, res) =>
-    res.sendFile(path.join(CLIENT_FOLDER, 'index.html')),);
+    res.sendFile(path.join(CLIENT_FOLDER, 'index.html')));
 }
 
 allPublicEndpoints.forEach(endpoint => serveStatic(endpoint));
 allPrivateEndpoints.forEach(endpoint =>
-  serveStatic(endpoint, utils.checkLoggedIn),);
+  serveStatic(endpoint, utils.checkLoggedIn));
 
 // Make all files in dist public (Must be after setting static endpoints)
 app.use(express.static(CLIENT_FOLDER));
@@ -52,16 +55,16 @@ app.get('/', utils.checkLoggedIn, (req, res) => {
 });
 
 app.get('/api/walmart', (req, res) => {
-  var data = process.env.WALMART_API_KEY || config.WALMART_API_KEY;
+  const data = process.env.WALMART_API_KEY || config.WALMART_API_KEY;
 
-  request(`http://api.walmartlabs.com/v1/search?apiKey=${data}&query=${req.query.query}&sort=price&order=asc&numItems=1`, function (error, response, body) {
+  request(`http://api.walmartlabs.com/v1/search?apiKey=${data}&query=${req.query.query}&sort=price&order=asc&numItems=1`, (error, response, body) => {
     res.send(JSON.parse(body));
   });
 });
 
 app.get('/api/edamam', (req, res) => {
-  var id = process.env.RECIPE_API_ID || config.RECIPE_API_ID;
-  var keys = process.env.RECIPE_API_KEYS || config.RECIPE_API_KEYS
+  const id = process.env.RECIPE_API_ID || config.RECIPE_API_ID;
+  const keys = process.env.RECIPE_API_KEYS || config.RECIPE_API_KEYS;
 
   request(`https://api.edamam.com/search?q=${req.query.q}&app_id=${id}&app_key=${keys}&from=0&to=12`, (error, response, body) => {
     res.send(JSON.parse(body));
@@ -70,8 +73,8 @@ app.get('/api/edamam', (req, res) => {
 });
 
 app.get('/api/edamam/filter', (req, res) => {
-  var id = process.env.RECIPELIST_API_ID || config.RECIPELIST_API_ID;
-  var keys = process.env.RECIPELIST_API_KEYS || config.RECIPELIST_API_KEYS
+  const id = process.env.RECIPELIST_API_ID || config.RECIPELIST_API_ID;
+  const keys = process.env.RECIPELIST_API_KEYS || config.RECIPELIST_API_KEYS;
 
   request(`https://api.edamam.com/search?q=${req.query.q}&app_id=${id}&app_key=${keys}&from=0&to=12&calories=${req.query.calories}&diet=${req.query.diet}&health=${req.query.health}`, (error, response, body) => {
     res.send(JSON.parse(body));
@@ -97,9 +100,9 @@ app.post('/login', (req, res) => {
       .then(({ user, hash, isValidUser }) => {
         if (!isValidUser) {
           res.end(JSON.stringify({
-              loc: '/login',
-              message: 'Username and password do not match our records',
-            }),);
+            loc: '/login',
+            message: 'Username and password do not match our records',
+          }));
         }
 
         req.session.username = username;
@@ -112,10 +115,10 @@ app.post('/login', (req, res) => {
       .catch((err) => {
         if (err) console.error('user does not exist.');
         res.end(JSON.stringify({
-            loc: '/register',
-            message:
+          loc: '/register',
+          message:
               'The user entered does not have an account with us. Please register to continue',
-          }),);
+        }));
       });
   } else {
     res.end(JSON.stringify({ loc: '/login' }));
@@ -146,7 +149,7 @@ app.post('/register', (req, res) => {
           grocery_list: [],
           last_login: new Date(),
           failed_login_attempts: 0,
-        }),)
+        }))
       .then((hash) => {
         req.session.username = username;
         req.session.hash = hash;
@@ -225,32 +228,40 @@ app.post('/store/create', utils.checkLoggedIn, (req, res) => {
         `Could not create store ${name} in Stores database (Duplicate?)`,
         err,
       );
-      res.send('Apologies for this error. From our expreience this occurs when the store name is a duplicate. We advise checking the store name.',);
+      res.send('Apologies for this error. From our expreience this occurs when the store name is a duplicate. We advise checking the store name.');
     });
 });
 
 app.post('/search/users', (req, res) => {
   database.searchUser(req.body).exec((err, user) => {
     if (user) {
-      res.end(JSON.stringify({ message: 'username already exists', error: true }),);
+      res.end(JSON.stringify({ message: 'username already exists', error: true }));
     } else {
-      res.end(JSON.stringify({ message: 'Username is available', error: false }),);
+      res.end(JSON.stringify({ message: 'Username is available', error: false }));
     }
   });
 });
 
 // Initialization
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 // socket.io
 
+const server = app
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+
+const io = socketIO(server);
 
 io.on('connection', (socket) => {
-  console.log(socket.id);
+  console.log('User connected');
 
   socket.on('sendMsg', (data) => {
     io.emit('receivedMsg', data);
+
+    socket.on('disconnect', () => {
+      console.log('user disconnected');
+    });
   });
 });
 
-server.listen(`${port}`);
+setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
