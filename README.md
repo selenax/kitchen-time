@@ -15,7 +15,8 @@ Oh, and I also like to write press-releases in what I call "Oprah-speak" for mai
 
 Once the project moves into development, the press release can be used as a touchstone; a guiding light. The product team can ask themselves, "Are we building what is in the press release?" If they find they're spending time building things that aren't in the press release (overbuilding), they need to ask themselves why. This keeps product development focused on achieving the customer benefits and not building extraneous stuff that takes longer to build, takes resources to maintain, and doesn't provide real customer benefit (at least not enough to warrant inclusion in the press release).
  -->
- 
+![kitchen time](https://user-images.githubusercontent.com/29153931/44297124-d520a480-a280-11e8-8e5c-a14c7a81575e.jpeg)
+
 ## Heading ##
   > Ever go grocery shopping and wonder. How much money have I spent so far? Well worry no longer PantryPatron can help with just that! Login, create a grocery list in advanced, then when you get to the grocery store go down the list and enter the price. We will take care of the rest. Before you get to the register you will know how much you owe before taxes.
 
