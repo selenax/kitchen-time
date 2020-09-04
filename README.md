@@ -1,5 +1,7 @@
 # Kitchen Time #
 
+This smart grocery app offers recipe recommendations and Walmart price checks based on the ingredients added to the shopping list.
+
 <!-- 
 > This material was originally posted [here](http://www.quora.com/What-is-Amazons-approach-to-product-development-and-product-management). It is reproduced here for posterities sake.
 
